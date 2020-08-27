@@ -16,12 +16,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
-  // FocusNode _editingFocus = FocusNode();
+
+  FocusNode _usernameFocus = FocusNode();
+  FocusNode _passwordFocus = FocusNode();
+  bool _usernameFocused = false;
+  bool _passwordFocused = false;
+
+  String _usernameHint = "Username";
+  String _passwordHint = "Password";
 
   BoxDecoration _inputDecoration = BoxDecoration(
       borderRadius: BorderRadius.circular(8.0),
-      // border: Border.all(),
+      border: Border.all(),
       color: Colors.grey[100]);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _usernameFocus.addListener(() {
+      if (_usernameFocus.hasFocus != _usernameFocused) {
+        setState(() {
+          _usernameFocused = _usernameFocus.hasFocus;
+        });
+      }
+      _usernameHint = _usernameFocused ? "" : "Username";
+/*      if (_usernameFocus.hasFocus) {
+        _usernameHint = "";
+      } else {
+        _usernameHint = "Username";
+      }
+*/
+    });
+
+    _passwordFocus.addListener(() {
+      if (_passwordFocus.hasFocus != _passwordFocused) {
+        setState(() {
+          _passwordFocused = _passwordFocus.hasFocus;
+        });
+      }
+      _passwordHint = _passwordFocused ? "" : "Password";
+    });
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +76,48 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget logo() {
-    return Container(height: 300.0);
+    return Container(height: 300.0, child: FlutterLogo(size: 150));
+  }
+
+  Widget usernameTextField() {
+    return new TextFormField(
+      focusNode: _usernameFocus,
+      onTap: () {
+        _usernameFocus.requestFocus();
+      },
+      controller: _usernameController,
+      style: _textStyleInput,
+      decoration: new InputDecoration.collapsed(
+          hintText: _usernameHint,
+          floatingLabelBehavior: FloatingLabelBehavior.never),
+      validator: (value) {
+        if (value.isEmpty) {
+          return "Please enter a username.";
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget passwordTextField() {
+    return new TextFormField(
+      focusNode: _passwordFocus,
+      onTap: () {
+        _passwordFocus.requestFocus();
+      },
+      controller: _passwordController,
+      obscureText: true,
+      style: _textStyleInput,
+      decoration: new InputDecoration.collapsed(
+          hintText: _passwordHint,
+          floatingLabelBehavior: FloatingLabelBehavior.never),
+      validator: (value) {
+        if (value.isEmpty) {
+          return "Please enter a password.";
+        }
+        return null;
+      },
+    );
   }
 
   Widget loginForm() {
@@ -54,45 +133,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding:
                       const EdgeInsets.only(left: 8.0, right: 4.0, top: 12),
                   decoration: _inputDecoration,
-                  child: TextFormField(
-                    controller: _usernameController,
-                    style: _textStyleInput,
-                    decoration:
-                        new InputDecoration.collapsed(hintText: "Username"),
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return "Please enter a username.";
-                      }
-                    },
-                  ),
+                  child: usernameTextField(),
                 ),
                 Container(margin: EdgeInsets.symmetric(vertical: 5.0)),
                 Container(
-                  padding:
-                      const EdgeInsets.only(left: 8.0, right: 4.0, top: 12),
-                  height: 40.0,
-                  decoration: _inputDecoration,
-                  child: TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    style: _textStyleInput,
-                    decoration:
-                        new InputDecoration.collapsed(hintText: "Password"),
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return "Please enter a password.";
-                      }
-                    },
-                  ),
-                ),
+                    padding:
+                        const EdgeInsets.only(left: 8.0, right: 4.0, top: 12),
+                    height: 40.0,
+                    decoration: _inputDecoration,
+                    child: passwordTextField()),
                 Container(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
                       onTap: () =>
                           _scaffoldKey.currentState.showSnackBar(SnackBar(
-                            content: Text("Forgot password."),
-                            duration: Duration(seconds: 2),
-                          )),
+                        content: Text("Forgot password."),
+                        duration: Duration(seconds: 2),
+                      )),
                       child: Text("Forgot your password?",
                           style: TextStyle(
                               fontFamily: "Futura",
@@ -109,11 +166,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: new BorderRadius.circular(8.0)),
                           child: Text("Sign in", style: _textStyleButton),
                           onPressed: () {
-                            SnackBar snackBar = SnackBar(
-                                content:
-                                    Text("Hello " + _usernameController.text),
-                                duration: Duration(seconds: 2));
-                            _scaffoldKey.currentState.showSnackBar(snackBar);
+                            if (_formKey.currentState.validate()) {
+                              SnackBar snackBar = SnackBar(
+                                  content:
+                                      Text("Hello " + _usernameController.text),
+                                  duration: Duration(seconds: 2));
+                              _scaffoldKey.currentState.showSnackBar(snackBar);
+                            }
                           })),
                 ),
                 Container(
@@ -137,9 +196,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: GestureDetector(
                       onTap: () =>
                           _scaffoldKey.currentState.showSnackBar(SnackBar(
-                            content: Text("Create an account."),
-                            duration: Duration(seconds: 2),
-                          )),
+                        content: Text("Create an account."),
+                        duration: Duration(seconds: 2),
+                      )),
                       child: Text("Don't have an account? Sign up!",
                           style: TextStyle(
                               fontFamily: "Futura",
